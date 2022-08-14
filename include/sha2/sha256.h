@@ -88,7 +88,7 @@ struct sha256_ctx {
  * destruction of the context once finished is not required.
  *
  * Example:
- * static void hash_data(const char *data, size_t len, struct sha256 *hash)
+ * static void hash_data(const char* data, size_t len, struct sha256* hash)
  * {
  *         struct sha256_ctx ctx;
  *         sha256_init(&ctx);
@@ -96,7 +96,7 @@ struct sha256_ctx {
  *         sha256_done(&ctx, hash);
  * }
  */
-void sha256_init(struct sha256_ctx *ctx);
+void sha256_init(struct sha256_ctx* ctx);
 
 /**
  * @brief Initialization constant for a SHA256 context.
@@ -105,7 +105,7 @@ void sha256_init(struct sha256_ctx *ctx);
  * calling sha256_init().
  *
  * Example:
- * static void hash_data(const char *data, size_t len, struct sha256 *hash)
+ * static void hash_data(const char* data, size_t len, struct sha256* hash)
  * {
  *         struct sha256_ctx ctx = SHA256_INIT;
  *         sha256_update(&ctx, data, len);
@@ -130,7 +130,7 @@ void sha256_init(struct sha256_ctx *ctx);
  * You can call this function multiple times with the same context to hash more
  * data, before calling sha256_done().
  */
-void sha256_update(struct sha256_ctx *ctx, const void *data, size_t len);
+void sha256_update(struct sha256_ctx* ctx, const void *data, size_t len);
 
 /**
  * @brief Finalize a SHA256 and return the resulting hash.
@@ -146,7 +146,7 @@ void sha256_update(struct sha256_ctx *ctx, const void *data, size_t len);
  * before being used again.  Calling sha256_update() or sha256_done() on an
  * already finalized context results in garbage data.
  */
-void sha256_done(struct sha256 *hash, struct sha256_ctx *ctx);
+void sha256_done(struct sha256* hash, struct sha256_ctx* ctx);
 
 #endif /* SHA2__SHA256_H */
 

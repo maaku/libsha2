@@ -672,14 +672,14 @@ const char* sha256_auto_detect()
 
 /* SHA-256 */
 
-void sha256_init(struct sha256_ctx *ctx)
+void sha256_init(struct sha256_ctx* ctx)
 {
         assert(ctx);
         ctx->bytes = 0;
         Initialize(ctx->s);
 }
 
-void sha256_update(struct sha256_ctx *ctx, const void *_data, size_t len)
+void sha256_update(struct sha256_ctx* ctx, const void *_data, size_t len)
 {
         const unsigned char* data = (const unsigned char*)_data;
         const unsigned char* end = data + len;
@@ -705,7 +705,7 @@ void sha256_update(struct sha256_ctx *ctx, const void *_data, size_t len)
         }
 }
 
-void sha256_done(struct sha256 *hash, struct sha256_ctx *ctx)
+void sha256_done(struct sha256* hash, struct sha256_ctx* ctx)
 {
         static const unsigned char pad[64] = {0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -725,7 +725,7 @@ void sha256_done(struct sha256 *hash, struct sha256_ctx *ctx)
         WriteBE32(&hash->u.u8[28], ctx->s[7]);
 }
 
-void sha256_reset(struct sha256_ctx *ctx)
+void sha256_reset(struct sha256_ctx* ctx)
 {
         assert(ctx);
         ctx->bytes = 0;
@@ -735,7 +735,7 @@ void sha256_reset(struct sha256_ctx *ctx)
 /* Extra functionality not yet exposed */
 
 void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned char* in, size_t blocks);
-void CSHA256_WriteAndFinalize8(struct sha256_ctx *ctx, const unsigned char* nonce1, const unsigned char* nonce2, const unsigned char* final, struct sha256 hashes[8])
+void CSHA256_WriteAndFinalize8(struct sha256_ctx* ctx, const unsigned char* nonce1, const unsigned char* nonce2, const unsigned char* final, struct sha256 hashes[8])
 {
         unsigned char blocks[8*64] = { 0 };
         for (int i = 0; i < 8; ++i) {
