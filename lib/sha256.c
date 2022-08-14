@@ -33,8 +33,10 @@ extern void transform_sha256d64_avx2_8way(unsigned char* out, const unsigned cha
 extern void transform_sha256_shani(uint32_t* s, const unsigned char* chunk, size_t blocks);
 extern void transform_sha256d64_shani_2way(unsigned char* out, const unsigned char* in);
 #endif
+#if defined(__arm__) || defined(__aarch32__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM)
 extern void transform_sha256_armv8(uint32_t* s, const unsigned char* chunk, size_t blocks);
 extern void transform_sha256d64_armv8_2way(unsigned char* out, const unsigned char* in);
+#endif
 
 static inline __attribute__((always_inline)) uint32_t Ch(uint32_t x, uint32_t y, uint32_t z) { return z ^ (x & (y ^ z)); }
 static inline __attribute__((always_inline)) uint32_t Maj(uint32_t x, uint32_t y, uint32_t z) { return (x & y) | (z & (x | y)); }
@@ -454,6 +456,12 @@ void transform_sha256d64_sse4(unsigned char* out, const unsigned char* in)
         transform_d64_wrapper(out, in, transform_sha256_sse4);
 }
 #endif /* defined(__x86_64__) || defined(__amd64__) || defined(__i386__) */
+#if defined(__arm__) || defined(__aarch32__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM)
+void transform_sha256d64_armv8(unsigned char* out, const unsigned char* in)
+{
+        transform_d64_wrapper(out, in, transform_sha256_armv8);
+}
+#endif /* defined(__arm__) || defined(__aarch32__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM) */
 
 transform_t transform = transform_noasm;
 transform_multi_t transform_2way = NULL;
@@ -627,17 +635,17 @@ const char* sha256_auto_detect()
 #endif
 
 #elif defined(__aarch64__)
-        bool have_arm_shani = false;
+        int have_arm_shani = 0;
 
 #if defined(__linux__)
 #if defined(__arm__) /* 32-bit */
         if (getauxval(AT_HWCAP2) & HWCAP2_SHA2) {
-                have_arm_shani = true;
+                have_arm_shani = !0;
         }
 #endif
 #if defined(__aarch64__) /* 64-bit */
         if (getauxval(AT_HWCAP) & HWCAP_SHA2) {
-                have_arm_shani = true;
+                have_arm_shani = !0;
         }
 #endif
 #endif
@@ -646,14 +654,14 @@ const char* sha256_auto_detect()
         int val = 0;
         size_t len = sizeof(val);
         if (sysctlbyname("hw.optional.arm.FEAT_SHA256", &val, &len, NULL, 0) == 0) {
-                have_arm_shani = true;
+                have_arm_shani = !0;
         }
 #endif
 
         if (have_arm_shani) {
-                Transform = sha256_armv8::Transform;
-                transform_d64 = transform_d64Wrapper<sha256_armv8::Transform>;
-                transform_d64_2way = sha256d64_armv8::transform_2way;
+                transform = transform_sha256_armv8;
+                transform_d64 = transform_sha256d64_armv8;
+                transform_d64_2way = transform_sha256d64_armv8_2way;
                 strcpy(ret, "armv8(1way,2way)");
         }
 #endif
