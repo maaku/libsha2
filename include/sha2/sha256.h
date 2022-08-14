@@ -1,0 +1,154 @@
+/* Copyright (c) 2014-2018 The Bitcoin Core developers
+ * Copyright (c) 2022 Mark Friedenbach
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#ifndef SHA2__SHA256_H
+#define SHA2__SHA256_H
+
+#include <stdint.h> /* for uint32_t */
+#include <stdlib.h> /* for size_t */
+
+/**
+ * @brief Autodetect the best available SHA256 implementation.
+ *
+ * @return const char* an ASCII-encoded string describing the selected
+ * algorithm(s)
+ *
+ * This library supports various vector compute and special-purpose
+ * cryptographic accelerators for efficiently calculating SHA256 hashs.  This
+ * function queries the host machine capabilities and selects which backend
+ * implementation to use.  A pointer to an internal buffer is returned to the
+ * caller, containing a string naming the algorithms selected.
+ *
+ * This API is automatically called the first time a hash update is performed,
+ * however it is not thread safe.  To query capabilities in a thread-safe way,
+ * and to report the selected algorithm to the user, please call this function
+ * during program initialization.
+ */
+const char* sha256_auto_detect();
+
+/**
+ * @brief A structure representing a completed SHA256 hash digest value.
+ *
+ * @u.u8: an unsigned char array
+ * @u.u32: a 32-bit integer array
+ *
+ * A completed SHA256 hash digest is stored in big-endian byte order, regardless
+ * of the endianness of the host machine.  Therefore accessing the union via u8
+ * is preferable for cross-platform compatibility.
+ */
+struct sha256 {
+        union {
+                uint32_t u32[8];
+                unsigned char u8[32];
+        } u;
+};
+
+/**
+ * @brief A structure for storing the running context of a sha256 hash.
+ *
+ * @s: the intermediate state in host-native byte order
+ * @buf: a buffer of up to 63 bytes of unhashed data
+ * @len: the total number of bytes hashed, including any buffered data
+ *
+ * The SHA256 state update function operates in blocks of 64 bytes at a time,
+ * but for convenience data of any size can be delivered to the hasher.  The
+ * context object contains the midstate data representing the current hash
+ * state, and a buffer of length 64 (of which up to 63 bytes might be used), and
+ * a count of the number of bytes hashed so far (including any buffered bytes).
+ * The count of the total number of bytes hashes is used both to record the
+ * number of buffered bytes and to calculate the final padding block.
+ */
+struct sha256_ctx {
+        uint32_t s[8];
+        union {
+                uint32_t u32[16];
+                unsigned char u8[64];
+        } buf;
+        size_t bytes;
+};
+
+/**
+ * @brief Initializes a SHA256 context.
+ *
+ * @param ctx the context to initialize
+ *
+ * This must be called before any of the other sha256 functions which take a
+ * context parameter.  Alternatively you may use the SHA256_INIT initialization
+ * constant instead.
+ *
+ * If the context was already initialized, this forgets any data that was hashed
+ * before.
+ *
+ * SHA256 context state does not include any dynamically allocated data, so
+ * destruction of the context once finished is not required.
+ *
+ * Example:
+ * static void hash_data(const char *data, size_t len, struct sha256 *hash)
+ * {
+ *         struct sha256_ctx ctx;
+ *         sha256_init(&ctx);
+ *         sha256_update(&ctx, data, len);
+ *         sha256_done(&ctx, hash);
+ * }
+ */
+void sha256_init(struct sha256_ctx *ctx);
+
+/**
+ * @brief Initialization constant for a SHA256 context.
+ *
+ * This can be used to statically initialize a SHA256 context, equivalent to
+ * calling sha256_init().
+ *
+ * Example:
+ * static void hash_data(const char *data, size_t len, struct sha256 *hash)
+ * {
+ *         struct sha256_ctx ctx = SHA256_INIT;
+ *         sha256_update(&ctx, data, len);
+ *         sha256_done(&ctx, hash);
+ * }
+ */
+#define SHA256_INIT                                                   \
+        { { 0x6a09e667ul, 0xbb67ae85ul, 0x3c6ef372ul, 0xa54ff53aul,   \
+            0x510e527ful, 0x9b05688cul, 0x1f83d9abul, 0x5be0cd19ul }, \
+          { { 0 } }, 0 }
+
+/**
+ * @brief Add some data from memory to the hash.
+ *
+ * @param ctx the sha256_ctx to use
+ * @param data a pointer to data in memory
+ * @param len the number of bytes pointed to by @data
+ *
+ * Adds data to the hash context, performing hash compressions if a full block
+ * of 64 bytes if formed, or storing the bytes in the buffer otherwise.
+ *
+ * You can call this function multiple times with the same context to hash more
+ * data, before calling sha256_done().
+ */
+void sha256_update(struct sha256_ctx *ctx, const void *data, size_t len);
+
+/**
+ * @brief Finalize a SHA256 and return the resulting hash.
+ *
+ * @param hash the hash to return
+ * @param ctx the sha256_ctx to finalize
+ *
+ * The finalization step involves hashing the remaining bytes in the buffer,
+ * plus some padding bytes to finish out the last block and include the number
+ * of bytes hashed.
+ *
+ * Note that the context is used up by this call and must be re-initialized
+ * before being used again.  Calling sha256_update() or sha256_done() on an
+ * already finalized context results in garbage data.
+ */
+void sha256_done(struct sha256 *hash, struct sha256_ctx *ctx);
+
+#endif /* SHA2__SHA256_H */
+
+/* End of File
+ */
