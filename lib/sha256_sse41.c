@@ -286,14 +286,14 @@ void transform_sha256d64_sse41_4way(unsigned char* out, const unsigned char* in)
         Round(c, d, e, &f, g, h, a, &b, Add(K(0xbef9a3f7ul), Inc4(&w14, sigma1(w12), w7, sigma0(w15))));
         Round(b, c, d, &e, f, g, h, &a, Add(K(0xc67178f2ul), Inc4(&w15, sigma1(w13), w8, sigma0(w0))));
 
-        a = Add(a, K(0x6a09e667ul)); t0 = a;
-        b = Add(b, K(0xbb67ae85ul)); t1 = b;
-        c = Add(c, K(0x3c6ef372ul)); t2 = c;
-        d = Add(d, K(0xa54ff53aul)); t3 = d;
-        e = Add(e, K(0x510e527ful)); t4 = e;
-        f = Add(f, K(0x9b05688cul)); t5 = f;
-        g = Add(g, K(0x1f83d9abul)); t6 = g;
-        h = Add(h, K(0x5be0cd19ul)); t7 = h;
+        t0 = a = Add(a, K(0x6a09e667ul));
+        t1 = b = Add(b, K(0xbb67ae85ul));
+        t2 = c = Add(c, K(0x3c6ef372ul));
+        t3 = d = Add(d, K(0xa54ff53aul));
+        t4 = e = Add(e, K(0x510e527ful));
+        t5 = f = Add(f, K(0x9b05688cul));
+        t6 = g = Add(g, K(0x1f83d9abul));
+        t7 = h = Add(h, K(0x5be0cd19ul));
 
         /* Transform 2 */
         Round(a, b, c, &d, e, f, g, &h, K(0xc28a2f98ul));
