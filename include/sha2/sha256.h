@@ -29,7 +29,7 @@
  * and to report the selected algorithm to the user, please call this function
  * during program initialization.
  */
-const char* sha256_auto_detect();
+const char* sha256_auto_detect(void);
 
 /**
  * @brief A structure representing a completed SHA256 hash digest value.
