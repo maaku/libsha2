@@ -583,6 +583,8 @@ const char* sha256_auto_detect()
         int have_shani = 0;
         int enabled_avx = 0;
 
+        uint32_t eax=0, ebx=0, ecx=0, edx=0;
+
         (void)AVXEnabled;
         (void)have_sse4;
         (void)have_avx;
@@ -591,7 +593,6 @@ const char* sha256_auto_detect()
         (void)have_shani;
         (void)enabled_avx;
 
-        uint32_t eax=0, ebx=0, ecx=0, edx=0;
         GetCPUID(1, 0, &eax, &ebx, &ecx, &edx);
         have_sse4 = (ecx >> 19) & 1;
         have_xsave = (ecx >> 27) & 1;

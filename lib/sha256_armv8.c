@@ -917,6 +917,11 @@ void transform_sha256d64_armv8_2way(unsigned char* output, const unsigned char* 
         vst1q_u8(output + 48, vrev32q_u8(vreinterpretq_u8_u32(STATE1B)));
 }
 
+#else
+/* -Wempty-translation-unit
+ * ISO C requires a translation unit to contain at least one declaration
+ */
+typedef int make_iso_compilers_happy;
 #endif /* ARMv8 */
 
 /* End of File

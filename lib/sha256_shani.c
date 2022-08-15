@@ -13,6 +13,11 @@
 
 #if defined(__x86_64__) || defined(__amd64__)
 
+#if defined(HAVE_CONFIG_H)
+#include <libsha2-config.h>
+#endif
+
+#include <string.h> /* for memcpy */
 #include <stdint.h> /* for uint8_t, uint32_t, uint64_t */
 #include <immintrin.h> /* for assembly intrinsics */
 
@@ -68,12 +73,32 @@ static inline __attribute__((always_inline)) void Unshuffle(__m128i *s0, __m128i
 
 static inline __attribute__((always_inline)) __m128i Load(const unsigned char* in)
 {
-        return _mm_shuffle_epi8(_mm_loadu_si128((const __m128i*)in), _mm_load_si128((const __m128i*)MASK));
+        /* FIXME: This totally unnecessary copying is a workaround to avoid the
+         * following warning:
+         *
+         *   warning: cast from 'const unsigned char *' to 'const __m128i *'
+         *   increases required alignment from 1 to 16 [-Wcast-align]
+         *
+         * We should be able to get rid of this copying by passing in a pointer
+         * to an actual 16-byte aligned structure. */
+        __m128i m;
+        memcpy(&m, in, sizeof(m));
+        return _mm_shuffle_epi8(_mm_loadu_si128(&m), _mm_load_si128((const __m128i*)MASK));
 }
 
 static inline __attribute__((always_inline)) void Save(unsigned char* out, __m128i s)
 {
-        _mm_storeu_si128((__m128i*)out, _mm_shuffle_epi8(s, _mm_load_si128((const __m128i*)MASK)));
+        /* FIXME: This totally unnecessary copying is a workaround to avoid the
+         * following warning:
+         *
+         *   warning: cast from 'unsigned char *' to '__m128i *' increases
+         *   required alignment from 1 to 16 [-Wcast-align]
+         *
+         * We should be able to get rid of this copying by passing in a pointer
+         * to an actual 16-byte aligned structure. */
+        __m128i m;
+        _mm_storeu_si128((__m128i*)&m, _mm_shuffle_epi8(s, _mm_load_si128((const __m128i*)MASK)));
+        memcpy(out, &m, sizeof(m));
 }
 
 void transform_sha256_shani(uint32_t* s, const unsigned char* chunk, size_t blocks)
@@ -81,8 +106,25 @@ void transform_sha256_shani(uint32_t* s, const unsigned char* chunk, size_t bloc
         __m128i m0, m1, m2, m3, s0, s1, so0, so1;
 
         /* Load state */
-        s0 = _mm_loadu_si128((const __m128i*)s);
-        s1 = _mm_loadu_si128((const __m128i*)(s + 4));
+        /* FIXME: This totally unnecessary copying is a workaround to avoid the
+         * following four warnings:
+         *
+         *   warning: cast from 'uint32_t *' (aka 'unsigned int *') to 'const
+         *   __m128i *' increases required alignment from 4 to 16 [-Wcast-align]
+         *   warning: cast from 'uint32_t *' (aka 'unsigned int *') to 'const
+         *   __m128i *' increases required alignment from 4 to 16 [-Wcast-align]
+         *   warning: cast from 'uint32_t *' (aka 'unsigned int *') to '__m128i *'
+         *   increases required alignment from 4 to 16 [-Wcast-align]
+         *   warning: cast from 'uint32_t *' (aka 'unsigned int *') to '__m128i *'
+         *   increases required alignment from 4 to 16 [-Wcast-align]
+         *
+         * We should be able to get rid of this copying by passing in a pointer
+         * to an actual 16-byte aligned structure. */
+        __m128i m;
+        memcpy(&m, s, sizeof(m));
+        s0 = _mm_loadu_si128(&m);
+        memcpy(&m, s + 4, sizeof(m));
+        s1 = _mm_loadu_si128(&m);
         Shuffle(&s0, &s1);
 
         while (blocks--) {
@@ -135,8 +177,11 @@ void transform_sha256_shani(uint32_t* s, const unsigned char* chunk, size_t bloc
         }
 
         Unshuffle(&s0, &s1);
-        _mm_storeu_si128((__m128i*)s, s0);
-        _mm_storeu_si128((__m128i*)(s + 4), s1);
+        /* See comment above about unnecessary copying. */
+        _mm_storeu_si128(&m, s0);
+        memcpy(s, &m, sizeof(m));
+        _mm_storeu_si128(&m, s1);
+        memcpy(s + 4, &m, sizeof(m));
 }
 
 void transform_sha256d64_shani_2way(unsigned char* out, const unsigned char* in)

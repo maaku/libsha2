@@ -58,6 +58,7 @@ stamp-h1
 libsha2.pc
 libsha2-config.h
 libsha2-config.h.in
+libtool
 
 # Editor files
 *~

@@ -56,6 +56,86 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([[char foo;]])],
 AC_C_INLINE
 AC_C_RESTRICT
 
+AX_CHECK_COMPILE_FLAG([-Werror], [CFLAG_WERROR="-Werror"], [CFLAG_WERROR=""])
+
+dnl x86_64
+
+AX_CHECK_COMPILE_FLAG([-msse4.1], [SSE41_CFLAGS="-msse4.1"], [], [$CFLAG_WERROR])
+TEMP_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $SSE41_CFLAGS"
+AC_MSG_CHECKING([for SSE4.1 intrinsics])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <stdint.h>
+    #include <immintrin.h>
+  ]],[[
+    __m128i l = _mm_set1_epi32(0);
+    return _mm_extract_epi32(l, 3);
+  ]])],
+ [ AC_MSG_RESULT([yes]); enable_sse41=yes; AC_DEFINE([ENABLE_SSE41], [1], [Define this symbol to
+ build code that uses SSE4.1 intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
+)
+CFLAGS="$TEMP_CFLAGS"
+AC_SUBST(SSE41_CFLAGS)
+
+AX_CHECK_COMPILE_FLAG([-mavx -mavx2], [AVX2_CFLAGS="-mavx -mavx2"], [], [$CFLAG_WERROR])
+TEMP_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $AVX2_CFLAGS"
+AC_MSG_CHECKING([for AVX2 intrinsics])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <stdint.h>
+    #include <immintrin.h>
+  ]],[[
+    __m256i l = _mm256_set1_epi32(0);
+    return _mm256_extract_epi32(l, 7);
+  ]])],
+ [ AC_MSG_RESULT([yes]); enable_avx2=yes; AC_DEFINE([ENABLE_AVX2], [1], [Define this symbol to build code that uses AVX2 intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
+)
+CFLAGS="$TEMP_CFLAGS"
+AC_SUBST(AVX2_CFLAGS)
+
+AX_CHECK_COMPILE_FLAG([-msse4 -msha], [X86_SHANI_CFLAGS="-msse4 -msha"], [], [$CFLAG_WERROR])
+TEMP_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $X86_SHANI_CFLAGS"
+AC_MSG_CHECKING([for SHA-NI intrinsics])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <stdint.h>
+    #include <immintrin.h>
+  ]],[[
+    __m128i i = _mm_set1_epi32(0);
+    __m128i j = _mm_set1_epi32(1);
+    __m128i k = _mm_set1_epi32(2);
+    return _mm_extract_epi32(_mm_sha256rnds2_epu32(i, i, k), 0);
+  ]])],
+ [ AC_MSG_RESULT([yes]); enable_shani=yes; AC_DEFINE([ENABLE_SHANI], [1], [Define this symbol to build code that uses SHA-NI intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
+)
+CFLAGS="$TEMP_CFLAGS"
+AC_SUBST(X86_SHANI_CFLAGS)
+
+dnl ARMv8
+
+AX_CHECK_COMPILE_FLAG([-march=armv8-a+crc+crypto], [ARM_SHANI_CFLAGS="-march=armv8-a+crc+crypto"], [], [$CFLAG_WERROR])
+TEMP_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $ARM_SHANI_CFLAGS"
+AC_MSG_CHECKING([for ARMv8 SHA-NI intrinsics])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <arm_acle.h>
+    #include <arm_neon.h>
+  ]],[[
+    uint32x4_t a, b, c;
+    vsha256h2q_u32(a, b, c);
+    vsha256hq_u32(a, b, c);
+    vsha256su0q_u32(a, b);
+    vsha256su1q_u32(a, b, c);
+  ]])],
+ [ AC_MSG_RESULT([yes]); enable_arm_shani=yes; AC_DEFINE([ENABLE_ARM_SHANI], [1], [Define this symbol to build code that uses ARMv8 SHA-NI intrinsics]) ],
+ [ AC_MSG_RESULT([no])]
+)
+CFLAGS="$TEMP_CFLAGS"
+AC_SUBST(ARM_SHANI_CFLAGS)
+
 AC_CONFIG_HEADERS([lib/config/libsha2-config.h])
 AC_CONFIG_FILES([Makefile libsha2.pc])
 

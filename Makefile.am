@@ -12,6 +12,10 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libsha2.pc
 
 libsha2_la_CPPFLAGS = -I$(srcdir)/include
+libsha2_la_CFLAGS  = $(SSE41_CFLAGS)
+libsha2_la_CFLAGS += $(AVX2_CFLAGS)
+libsha2_la_CFLAGS += $(X86_SHANI_CFLAGS)
+libsha2_la_CFLAGS += $(ARM_SHANI_CFLAGS)
 libsha2_la_SOURCES  = lib/common.c
 libsha2_la_SOURCES += lib/compat/byteswap.c
 libsha2_la_SOURCES += lib/sha256.c
