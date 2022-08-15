@@ -10,7 +10,7 @@
 #define SHA2__COMPAT__ENDIAN_H
 
 #if defined(HAVE_CONFIG_H)
-#include <config/bitcoin-config.h>
+#include <libsha2-config.h>
 #endif
 
 #include "byteswap.h" /* for bswap_16, bswap_32, bswap_64 */

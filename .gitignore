@@ -42,6 +42,23 @@
 *.idb
 *.pdb
 
+# Autotools files
+.deps/
+.dirstamp
+.libs/
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache/
+build-aux/
+config.log
+config.status
+configure
+stamp-h1
+libsha2.pc
+libsha2-config.h
+libsha2-config.h.in
+
 # Editor files
 *~
 *.orig

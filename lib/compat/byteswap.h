@@ -10,7 +10,7 @@
 #define SHA2__COMPAT__BYTESWAP_H
 
 #if defined(HAVE_CONFIG_H)
-#include <config/bitcoin-config.h>
+#include <libsha2-config.h>
 #endif
 
 #include <stdint.h> /* for uint16_t, uint32_t, uint64_t */
