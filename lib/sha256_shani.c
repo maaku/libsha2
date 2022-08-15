@@ -349,6 +349,11 @@ void transform_sha256d64_shani_2way(unsigned char* out, const unsigned char* in)
         Save(out + 48, bs1);
 }
 
+#else
+/* -Wempty-translation-unit
+ * ISO C requires a translation unit to contain at least one declaration
+ */
+typedef int make_iso_compilers_happy;
 #endif
 
 /* End of File

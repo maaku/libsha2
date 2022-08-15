@@ -464,6 +464,11 @@ void transform_sha256d64_sse41_4way(unsigned char* out, const unsigned char* in)
         Write4(out, 28, Add(h, K(0x5be0cd19ul)));
 }
 
+#else
+/* -Wempty-translation-unit
+ * ISO C requires a translation unit to contain at least one declaration
+ */
+typedef int make_iso_compilers_happy;
 #endif
 
 /* End of File

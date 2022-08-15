@@ -168,6 +168,8 @@ static void transform_d64_noasm(unsigned char* out, const unsigned char* in)
 
         uint32_t w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15;
 
+        uint32_t t0, t1, t2, t3, t4, t5, t6, t7;
+
         Round(a, b, c, &d, e, f, g, &h, 0x428a2f98ul + (w0 = ReadBE32(in + 0)));
         Round(h, a, b, &c, d, e, f, &g, 0x71374491ul + (w1 = ReadBE32(in + 4)));
         Round(g, h, a, &b, c, d, e, &f, 0xb5c0fbcful + (w2 = ReadBE32(in + 8)));
@@ -233,16 +235,14 @@ static void transform_d64_noasm(unsigned char* out, const unsigned char* in)
         Round(c, d, e, &f, g, h, a, &b, 0xbef9a3f7ul + (w14 + sigma1(w12) + w7 + sigma0(w15)));
         Round(b, c, d, &e, f, g, h, &a, 0xc67178f2ul + (w15 + sigma1(w13) + w8 + sigma0(w0)));
 
-        a += 0x6a09e667ul;
-        b += 0xbb67ae85ul;
-        c += 0x3c6ef372ul;
-        d += 0xa54ff53aul;
-        e += 0x510e527ful;
-        f += 0x9b05688cul;
-        g += 0x1f83d9abul;
-        h += 0x5be0cd19ul;
-
-        uint32_t t0 = a, t1 = b, t2 = c, t3 = d, t4 = e, t5 = f, t6 = g, t7 = h;
+        a += 0x6a09e667ul; t0 = a;
+        b += 0xbb67ae85ul; t1 = b;
+        c += 0x3c6ef372ul; t2 = c;
+        d += 0xa54ff53aul; t3 = d;
+        e += 0x510e527ful; t4 = e;
+        f += 0x9b05688cul; t5 = f;
+        g += 0x1f83d9abul; t6 = g;
+        h += 0x5be0cd19ul; t7 = h;
 
         /* Transform 2 */
         Round(a, b, c, &d, e, f, g, &h, 0xc28a2f98ul);
@@ -520,8 +520,10 @@ static int self_test() {
                 0xd7, 0x93, 0x6b, 0x28, 0xe4, 0x3b, 0xfd, 0x59, 0xc6, 0xed, 0x7c, 0x5f, 0xa5, 0x41, 0xcb, 0x51
         };
 
+        int i;
+
         /* Test transform() for 0 through 8 transformations. */
-        for (size_t i = 0; i <= 8; ++i) {
+        for (i = 0; i <= 8; ++i) {
                 uint32_t state[8];
                 memcpy(state, init, 8 * sizeof(uint32_t));
                 transform(state, data + 1, i);
@@ -529,9 +531,11 @@ static int self_test() {
         }
 
         /* Test transform_d64 */
-        unsigned char out[32];
-        transform_d64(out, data + 1);
-        if (memcmp(out, result_d64, 32)) return 0;
+        {
+            unsigned char out[32];
+            transform_d64(out, data + 1);
+            if (memcmp(out, result_d64, 32)) return 0;
+        }
 
         /* Test transform_d64_2way, if available. */
         if (transform_d64_2way) {
@@ -570,8 +574,7 @@ static int AVXEnabled()
 
 const char* sha256_auto_detect()
 {
-        static char ret[255] = { 0 };
-        strcpy(ret, "standard");
+        static char ret[255] = "standard";
 #if defined(HAVE_GETCPUID)
         int have_sse4 = 0;
         int have_xsave = 0;
@@ -738,7 +741,8 @@ void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned
 void CSHA256_WriteAndFinalize8(struct sha256_ctx* ctx, const unsigned char* nonce1, const unsigned char* nonce2, const unsigned char* final, struct sha256 hashes[8])
 {
         unsigned char blocks[8*64] = { 0 };
-        for (int i = 0; i < 8; ++i) {
+        int i;
+        for (i = 0; i < 8; ++i) {
                 memcpy(blocks + i*64 + 0, nonce1, 4);
                 memcpy(blocks + i*64 + 4, nonce2, 4);
                 memcpy(blocks + i*64 + 8, final, 4);
@@ -812,9 +816,10 @@ void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned
         while (blocks) {
                 uint32_t s[8];
                 unsigned char* _out = out->u.u8;
+                int i;
                 memcpy(s, midstate, 8 * sizeof(uint32_t));
                 transform(s, in, 1);
-                for (int i = 0; i < 8; ++i) {
+                for (i = 0; i < 8; ++i) {
                         WriteBE32(_out, s[i]);
                         _out += 4;
                 }
