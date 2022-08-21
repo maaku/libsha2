@@ -729,24 +729,6 @@ void sha256_done(struct sha256* hash, struct sha256_ctx* ctx)
         WriteBE32(&hash->u.u8[28], ctx->s[7]);
 }
 
-/* Extra functionality not yet exposed */
-
-void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned char* in, size_t blocks);
-void CSHA256_WriteAndFinalize8(struct sha256_ctx* ctx, const unsigned char* nonce1, const unsigned char* nonce2, const unsigned char* final, struct sha256 hashes[8])
-{
-        unsigned char blocks[8*64] = { 0 };
-        int i;
-        for (i = 0; i < 8; ++i) {
-                memcpy(blocks + i*64 + 0, nonce1, 4);
-                memcpy(blocks + i*64 + 4, nonce2, 4);
-                memcpy(blocks + i*64 + 8, final, 4);
-                blocks[i*64 + 12] = 0x80; /* padding byte */
-                WriteBE64(blocks + i*64 + 56, (ctx->bytes + 12) << 3);
-                nonce2 += 4;
-        }
-        SHA256Midstate(hashes, ctx->s, blocks, 8);
-}
-
 void SHA256D64(unsigned char* out, const unsigned char* in, size_t blocks)
 {
         if (transform_d64_8way) {
@@ -779,6 +761,24 @@ void SHA256D64(unsigned char* out, const unsigned char* in, size_t blocks)
                 in += 64;
                 --blocks;
         }
+}
+
+/* Extra functionality not yet exposed */
+
+void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned char* in, size_t blocks);
+void CSHA256_WriteAndFinalize8(struct sha256_ctx* ctx, const unsigned char* nonce1, const unsigned char* nonce2, const unsigned char* final, struct sha256 hashes[8])
+{
+        unsigned char blocks[8*64] = { 0 };
+        int i;
+        for (i = 0; i < 8; ++i) {
+                memcpy(blocks + i*64 + 0, nonce1, 4);
+                memcpy(blocks + i*64 + 4, nonce2, 4);
+                memcpy(blocks + i*64 + 8, final, 4);
+                blocks[i*64 + 12] = 0x80; /* padding byte */
+                WriteBE64(blocks + i*64 + 56, (ctx->bytes + 12) << 3);
+                nonce2 += 4;
+        }
+        SHA256Midstate(hashes, ctx->s, blocks, 8);
 }
 
 void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned char* in, size_t blocks)
