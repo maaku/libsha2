@@ -85,7 +85,8 @@ struct sha256_ctx {
  * before.
  *
  * SHA256 context state does not include any dynamically allocated data, so
- * destruction of the context once finished is not required.
+ * destruction of the context once finished is not required.  Contexts may also
+ * be safely reset through re-initialization with sha256_init().
  *
  * Example:
  * static void hash_data(const char* data, size_t len, struct sha256* hash)

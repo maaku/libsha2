@@ -729,13 +729,6 @@ void sha256_done(struct sha256* hash, struct sha256_ctx* ctx)
         WriteBE32(&hash->u.u8[28], ctx->s[7]);
 }
 
-void sha256_reset(struct sha256_ctx* ctx)
-{
-        assert(ctx);
-        ctx->bytes = 0;
-        Initialize(ctx->s);
-}
-
 /* Extra functionality not yet exposed */
 
 void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned char* in, size_t blocks);
