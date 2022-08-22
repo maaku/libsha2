@@ -139,7 +139,7 @@ CFLAGS="$TEMP_CFLAGS"
 AC_SUBST(ARM_SHANI_CFLAGS)
 
 AC_CONFIG_HEADERS([lib/config/libsha2-config.h])
-AC_CONFIG_FILES([Makefile libsha2.pc])
+AC_CONFIG_FILES([Makefile lib/Makefile lib/libsha2.pc])
 
 dnl make sure nothing new is exported so that we don't break the cache
 PKGCONFIG_PATH_TEMP="$PKG_CONFIG_PATH"
