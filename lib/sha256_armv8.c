@@ -223,7 +223,7 @@ void transform_sha256_armv8(uint32_t* state, const unsigned char* data, size_t b
         vst1q_u32(&state[4], STATE1);
 }
 
-void transform_sha256d64_armv8_2way(unsigned char* output, const struct sha256* input)
+void transform_sha256d64_armv8_2way(struct sha256* output, const struct sha256* input)
 {
         /* Initial state. */
         static const __attribute__((aligned (16))) uint32_t INIT[8] = {
@@ -272,14 +272,14 @@ void transform_sha256d64_armv8_2way(unsigned char* output, const struct sha256* 
         STATE1B = STATE1A;
 
         /* Transform 1: Load and convert input data to Big Endian */
-        MSG0A = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(input + 0)));
-        MSG1A = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(input + 16)));
-        MSG2A = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(input + 32)));
-        MSG3A = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(input + 48)));
-        MSG0B = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(input + 64)));
-        MSG1B = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(input + 80)));
-        MSG2B = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(input + 96)));
-        MSG3B = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(input + 112)));
+        MSG0A = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(&input[0].u8[0])));
+        MSG1A = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(&input[0].u8[16])));
+        MSG2A = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(&input[1].u8[0])));
+        MSG3A = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(&input[1].u8[16])));
+        MSG0B = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(&input[2].u8[0])));
+        MSG1B = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(&input[2].u8[16])));
+        MSG2B = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(&input[3].u8[0])));
+        MSG3B = vreinterpretq_u32_u8(vrev32q_u8(vld1q_u8(&input[3].u8[16])));
 
         /* Transform 1: Rounds 1-4 */
         TMP = vld1q_u32(&K[0]);
@@ -914,10 +914,10 @@ void transform_sha256d64_armv8_2way(unsigned char* output, const struct sha256* 
         STATE1B = vaddq_u32(STATE1B, TMP);
 
         /* Store result */
-        vst1q_u8(output, vrev32q_u8(vreinterpretq_u8_u32(STATE0A)));
-        vst1q_u8(output + 16, vrev32q_u8(vreinterpretq_u8_u32(STATE1A)));
-        vst1q_u8(output + 32, vrev32q_u8(vreinterpretq_u8_u32(STATE0B)));
-        vst1q_u8(output + 48, vrev32q_u8(vreinterpretq_u8_u32(STATE1B)));
+        vst1q_u8(&output[0].u8[0], vrev32q_u8(vreinterpretq_u8_u32(STATE0A)));
+        vst1q_u8(&output[0].u8[16], vrev32q_u8(vreinterpretq_u8_u32(STATE1A)));
+        vst1q_u8(&output[1].u8[0], vrev32q_u8(vreinterpretq_u8_u32(STATE0B)));
+        vst1q_u8(&output[1].u8[16], vrev32q_u8(vreinterpretq_u8_u32(STATE1B)));
 }
 
 #else
