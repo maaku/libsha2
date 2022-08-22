@@ -7,8 +7,8 @@ libgtest_la_LDFLAGS = -pthread
 
 check_PROGRAMS = sha2
 sha2_SOURCES = sha2.cc
-sha2_LDADD = libgtest.la
+sha2_LDADD = libgtest.la $(top_srcdir)/lib/.libs/libsha2.a
 sha2_LDFLAGS = -pthread
-sha2_CPPFLAGS = -I$(top_srcdir)/googletest/googletest/include -I$(top_srcdir)/googletest/googletest -pthread
+sha2_CPPFLAGS = -I$(top_srcdir)/googletest/googletest/include -I$(top_srcdir)/googletest/googletest -pthread -I$(top_srcdir)/include
 
 TESTS = sha2
