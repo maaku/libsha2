@@ -146,6 +146,24 @@ void sha256_update(struct sha256_ctx* ctx, const void *data, size_t len);
  */
 void sha256_done(struct sha256* hash, struct sha256_ctx* ctx);
 
+/**
+ * @brief Perform a merkle-tree compression step using double-SHA256
+ *
+ * @param out an array of 2*blocks sha256 hash values
+ * @param in an array of 1*blocks sha256 hash values
+ * @param blocks the number of double-SHA256 hash operations to perform
+ *
+ * Each pair of hashes from the input are hashed together, and then the
+ * resulting value is hashed one more time.  Since two 32-byte hash values take
+ * two SHA256 blocks to compress, and the intermediate value takes one, this
+ * performs 3 compression rounds per inner-node in the tree.
+ *
+ * The origin of this primitive is in how Bitcoin and related projects construct
+ * Merkle trees by performing double-SHA256 hashes of child leaf values to
+ * produce the parent or inner-node value.
+ */
+void sha256_d64(struct sha256 out[], const struct sha256 input[], size_t blocks);
+
 #endif /* SHA2__SHA256_H */
 
 /* End of File

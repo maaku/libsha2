@@ -718,7 +718,7 @@ void sha256_done(struct sha256* hash, struct sha256_ctx* ctx)
         WriteBE32(&hash->u8[28], ctx->s[7]);
 }
 
-void sha256d64(struct sha256* out, const struct sha256* in, size_t blocks)
+void sha256_d64(struct sha256 out[], const struct sha256 in[], size_t blocks)
 {
         if (transform_d64_8way) {
                 while (blocks >= 8) {
