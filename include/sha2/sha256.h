@@ -9,6 +9,10 @@
 #ifndef SHA2__SHA256_H
 #define SHA2__SHA256_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h> /* for uint32_t */
 #include <stdlib.h> /* for size_t */
 
@@ -171,6 +175,10 @@ void sha256_done(struct sha256* hash, struct sha256_ctx* ctx);
  * library contains vector-optimized implementations for many architectures.
  */
 void sha256_double64(struct sha256 out[], const struct sha256 in[], size_t blocks);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SHA2__SHA256_H */
 
