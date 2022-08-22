@@ -10,6 +10,7 @@
 TEST(gtest, assert_eq)
 {
     ASSERT_EQ(0, 0);
+    ASSERT_NE(0, 1);
 }
 
 int main(int argc, char **argv)
