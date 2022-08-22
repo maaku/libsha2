@@ -60,11 +60,6 @@ libsha2-config.h
 libsha2-config.h.in
 libtool
 
-# Googletest files
-*.log
-*.trs
-gtest
-
 # Editor files
 *~
 *.orig
