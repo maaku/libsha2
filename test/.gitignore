@@ -1,4 +1,4 @@
 # Googletest files
 *.log
 *.trs
-gtest
+sha2
