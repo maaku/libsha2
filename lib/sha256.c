@@ -24,19 +24,7 @@
 #include <sys/sysctl.h>
 #endif
 
-#if defined(__x86_64__) || defined(__amd64__) || defined(__i386__)
-extern void transform_sha256_sse4(uint32_t* s, const unsigned char* chunk, size_t blocks);
-extern void transform_sha256multi_sse41_4way(unsigned char* out, const uint32_t* s, const unsigned char* in);
-extern void transform_sha256d64_sse41_4way(unsigned char* out, const unsigned char* in);
-extern void transform_sha256multi_avx2_8way(unsigned char* out, const uint32_t* s, const unsigned char* in);
-extern void transform_sha256d64_avx2_8way(unsigned char* out, const unsigned char* in);
-extern void transform_sha256_shani(uint32_t* s, const unsigned char* chunk, size_t blocks);
-extern void transform_sha256d64_shani_2way(unsigned char* out, const unsigned char* in);
-#endif
-#if defined(__arm__) || defined(__aarch32__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM)
-extern void transform_sha256_armv8(uint32_t* s, const unsigned char* chunk, size_t blocks);
-extern void transform_sha256d64_armv8_2way(unsigned char* out, const unsigned char* in);
-#endif
+#include "sha256_internal.h"
 
 static inline __attribute__((always_inline)) uint32_t Ch(uint32_t x, uint32_t y, uint32_t z) { return z ^ (x & (y ^ z)); }
 static inline __attribute__((always_inline)) uint32_t Maj(uint32_t x, uint32_t y, uint32_t z) { return (x & y) | (z & (x | y)); }
@@ -154,7 +142,7 @@ static void transform_noasm(uint32_t* s, const unsigned char* chunk, size_t bloc
         }
 }
 
-static void transform_d64_noasm(unsigned char* out, const unsigned char* in)
+static void transform_d64_noasm(struct sha256* out, const struct sha256* in)
 {
         /* Transform 1 */
         uint32_t a = 0x6a09e667ul;
@@ -170,22 +158,22 @@ static void transform_d64_noasm(unsigned char* out, const unsigned char* in)
 
         uint32_t t0, t1, t2, t3, t4, t5, t6, t7;
 
-        Round(a, b, c, &d, e, f, g, &h, 0x428a2f98ul + (w0 = ReadBE32(in + 0)));
-        Round(h, a, b, &c, d, e, f, &g, 0x71374491ul + (w1 = ReadBE32(in + 4)));
-        Round(g, h, a, &b, c, d, e, &f, 0xb5c0fbcful + (w2 = ReadBE32(in + 8)));
-        Round(f, g, h, &a, b, c, d, &e, 0xe9b5dba5ul + (w3 = ReadBE32(in + 12)));
-        Round(e, f, g, &h, a, b, c, &d, 0x3956c25bul + (w4 = ReadBE32(in + 16)));
-        Round(d, e, f, &g, h, a, b, &c, 0x59f111f1ul + (w5 = ReadBE32(in + 20)));
-        Round(c, d, e, &f, g, h, a, &b, 0x923f82a4ul + (w6 = ReadBE32(in + 24)));
-        Round(b, c, d, &e, f, g, h, &a, 0xab1c5ed5ul + (w7 = ReadBE32(in + 28)));
-        Round(a, b, c, &d, e, f, g, &h, 0xd807aa98ul + (w8 = ReadBE32(in + 32)));
-        Round(h, a, b, &c, d, e, f, &g, 0x12835b01ul + (w9 = ReadBE32(in + 36)));
-        Round(g, h, a, &b, c, d, e, &f, 0x243185beul + (w10 = ReadBE32(in + 40)));
-        Round(f, g, h, &a, b, c, d, &e, 0x550c7dc3ul + (w11 = ReadBE32(in + 44)));
-        Round(e, f, g, &h, a, b, c, &d, 0x72be5d74ul + (w12 = ReadBE32(in + 48)));
-        Round(d, e, f, &g, h, a, b, &c, 0x80deb1feul + (w13 = ReadBE32(in + 52)));
-        Round(c, d, e, &f, g, h, a, &b, 0x9bdc06a7ul + (w14 = ReadBE32(in + 56)));
-        Round(b, c, d, &e, f, g, h, &a, 0xc19bf174ul + (w15 = ReadBE32(in + 60)));
+        Round(a, b, c, &d, e, f, g, &h, 0x428a2f98ul + (w0 = ReadBE32(&in[0].u8[0])));
+        Round(h, a, b, &c, d, e, f, &g, 0x71374491ul + (w1 = ReadBE32(&in[0].u8[4])));
+        Round(g, h, a, &b, c, d, e, &f, 0xb5c0fbcful + (w2 = ReadBE32(&in[0].u8[8])));
+        Round(f, g, h, &a, b, c, d, &e, 0xe9b5dba5ul + (w3 = ReadBE32(&in[0].u8[12])));
+        Round(e, f, g, &h, a, b, c, &d, 0x3956c25bul + (w4 = ReadBE32(&in[0].u8[16])));
+        Round(d, e, f, &g, h, a, b, &c, 0x59f111f1ul + (w5 = ReadBE32(&in[0].u8[20])));
+        Round(c, d, e, &f, g, h, a, &b, 0x923f82a4ul + (w6 = ReadBE32(&in[0].u8[24])));
+        Round(b, c, d, &e, f, g, h, &a, 0xab1c5ed5ul + (w7 = ReadBE32(&in[0].u8[28])));
+        Round(a, b, c, &d, e, f, g, &h, 0xd807aa98ul + (w8 = ReadBE32(&in[1].u8[0])));
+        Round(h, a, b, &c, d, e, f, &g, 0x12835b01ul + (w9 = ReadBE32(&in[1].u8[4])));
+        Round(g, h, a, &b, c, d, e, &f, 0x243185beul + (w10 = ReadBE32(&in[1].u8[8])));
+        Round(f, g, h, &a, b, c, d, &e, 0x550c7dc3ul + (w11 = ReadBE32(&in[1].u8[12])));
+        Round(e, f, g, &h, a, b, c, &d, 0x72be5d74ul + (w12 = ReadBE32(&in[1].u8[16])));
+        Round(d, e, f, &g, h, a, b, &c, 0x80deb1feul + (w13 = ReadBE32(&in[1].u8[20])));
+        Round(c, d, e, &f, g, h, a, &b, 0x9bdc06a7ul + (w14 = ReadBE32(&in[1].u8[24])));
+        Round(b, c, d, &e, f, g, h, &a, 0xc19bf174ul + (w15 = ReadBE32(&in[1].u8[28])));
         Round(a, b, c, &d, e, f, g, &h, 0xe49b69c1ul + (w0 += sigma1(w14) + w9 + sigma0(w1)));
         Round(h, a, b, &c, d, e, f, &g, 0xefbe4786ul + (w1 += sigma1(w15) + w10 + sigma0(w2)));
         Round(g, h, a, &b, c, d, e, &f, 0x0fc19dc6ul + (w2 += sigma1(w0) + w11 + sigma0(w3)));
@@ -395,21 +383,21 @@ static void transform_d64_noasm(unsigned char* out, const unsigned char* in)
         Round(b, c, d, &e, f, g, h, &a, 0xc67178f2ul + (w15 + sigma1(w13) + w8 + sigma0(w0)));
 
         /* Output */
-        WriteBE32(out + 0, a + 0x6a09e667ul);
-        WriteBE32(out + 4, b + 0xbb67ae85ul);
-        WriteBE32(out + 8, c + 0x3c6ef372ul);
-        WriteBE32(out + 12, d + 0xa54ff53aul);
-        WriteBE32(out + 16, e + 0x510e527ful);
-        WriteBE32(out + 20, f + 0x9b05688cul);
-        WriteBE32(out + 24, g + 0x1f83d9abul);
-        WriteBE32(out + 28, h + 0x5be0cd19ul);
+        WriteBE32(&out->u8[0], a + 0x6a09e667ul);
+        WriteBE32(&out->u8[4], b + 0xbb67ae85ul);
+        WriteBE32(&out->u8[8], c + 0x3c6ef372ul);
+        WriteBE32(&out->u8[12], d + 0xa54ff53aul);
+        WriteBE32(&out->u8[16], e + 0x510e527ful);
+        WriteBE32(&out->u8[20], f + 0x9b05688cul);
+        WriteBE32(&out->u8[24], g + 0x1f83d9abul);
+        WriteBE32(&out->u8[28], h + 0x5be0cd19ul);
 }
 
 typedef void (*transform_t)(uint32_t*, const unsigned char*, size_t);
-typedef void (*transform_multi_t)(unsigned char*, const uint32_t*, const unsigned char*);
-typedef void (*transform_d64_t)(unsigned char*, const unsigned char*);
+typedef void (*transform_multi_t)(struct sha256*, const uint32_t*, const unsigned char*);
+typedef void (*transform_d64_t)(struct sha256*, const struct sha256*);
 
-void transform_d64_wrapper(unsigned char* out, const unsigned char* in, transform_t tr)
+void transform_d64_wrapper(struct sha256* out, const struct sha256* in, transform_t tr)
 {
         uint32_t s[8];
         static const unsigned char padding1[64] = {
@@ -425,7 +413,7 @@ void transform_d64_wrapper(unsigned char* out, const unsigned char* in, transfor
                 0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0
         };
         Initialize(s);
-        tr(s, in, 1);
+        tr(s, in->u8, 1);
         tr(s, padding1, 1);
         WriteBE32(buffer2 + 0, s[0]);
         WriteBE32(buffer2 + 4, s[1]);
@@ -437,27 +425,27 @@ void transform_d64_wrapper(unsigned char* out, const unsigned char* in, transfor
         WriteBE32(buffer2 + 28, s[7]);
         Initialize(s);
         tr(s, buffer2, 1);
-        WriteBE32(out + 0, s[0]);
-        WriteBE32(out + 4, s[1]);
-        WriteBE32(out + 8, s[2]);
-        WriteBE32(out + 12, s[3]);
-        WriteBE32(out + 16, s[4]);
-        WriteBE32(out + 20, s[5]);
-        WriteBE32(out + 24, s[6]);
-        WriteBE32(out + 28, s[7]);
+        WriteBE32(&out->u8[0], s[0]);
+        WriteBE32(&out->u8[4], s[1]);
+        WriteBE32(&out->u8[8], s[2]);
+        WriteBE32(&out->u8[12], s[3]);
+        WriteBE32(&out->u8[16], s[4]);
+        WriteBE32(&out->u8[20], s[5]);
+        WriteBE32(&out->u8[24], s[6]);
+        WriteBE32(&out->u8[28], s[7]);
 }
 #if defined(__x86_64__) || defined(__amd64__)
-void transform_sha256d64_shani(unsigned char* out, const unsigned char* in)
+void transform_sha256d64_shani(struct sha256* out, const struct sha256* in)
 {
         transform_d64_wrapper(out, in, transform_sha256_shani);
 }
-void transform_sha256d64_sse4(unsigned char* out, const unsigned char* in)
+void transform_sha256d64_sse4(struct sha256* out, const struct sha256* in)
 {
         transform_d64_wrapper(out, in, transform_sha256_sse4);
 }
 #endif /* defined(__x86_64__) || defined(__amd64__) || defined(__i386__) */
 #if defined(__arm__) || defined(__aarch32__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM)
-void transform_sha256d64_armv8(unsigned char* out, const unsigned char* in)
+void transform_sha256d64_armv8(struct sha256* out, const struct sha256* in)
 {
         transform_d64_wrapper(out, in, transform_sha256_armv8);
 }
@@ -488,6 +476,7 @@ static int self_test() {
                 "mentum leo vel orci. Massa tempor nec feugiat nisl pretium fusce"
                 " id velit. Telus in metus vulputate eu scelerisque felis. Mi tem"
                 "pus imperdiet nulla malesuada pellentesque. Tristique magna sit.";
+        static const struct sha256* data_d64 = (const struct sha256*)&data[1];
         /* Expected output state for hashing the i*64 first input bytes above (excluding SHA256 padding). */
         static const uint32_t result[9][8] = {
                 {0x6a09e667ul, 0xbb67ae85ul, 0x3c6ef372ul, 0xa54ff53aul, 0x510e527ful, 0x9b05688cul, 0x1f83d9abul, 0x5be0cd19ul},
@@ -532,29 +521,29 @@ static int self_test() {
 
         /* Test transform_d64 */
         {
-            unsigned char out[32];
-            transform_d64(out, data + 1);
+            struct sha256 out[1];
+            transform_d64(out, data_d64);
             if (memcmp(out, result_d64, 32)) return 0;
         }
 
         /* Test transform_d64_2way, if available. */
         if (transform_d64_2way) {
-                unsigned char out[64];
-                transform_d64_2way(out, data + 1);
+                struct sha256 out[2];
+                transform_d64_2way(out, data_d64);
                 if (memcmp(out, result_d64, 64)) return 0;
         }
 
         /* Test transform_d64_4way, if available. */
         if (transform_d64_4way) {
-                unsigned char out[128];
-                transform_d64_4way(out, data + 1);
+                struct sha256 out[4];
+                transform_d64_4way(out, data_d64);
                 if (memcmp(out, result_d64, 128)) return 0;
         }
 
         /* Test transform_d64_8way, if available. */
         if (transform_d64_8way) {
-                unsigned char out[256];
-                transform_d64_8way(out, data + 1);
+                struct sha256 out[8];
+                transform_d64_8way(out, data_d64);
                 if (memcmp(out, result_d64, 256)) return 0;
         }
 
@@ -719,46 +708,46 @@ void sha256_done(struct sha256* hash, struct sha256_ctx* ctx)
         WriteBE64(sizedesc, ctx->bytes << 3);
         sha256_update(ctx, pad, 1 + ((119 - (ctx->bytes % 64)) % 64));
         sha256_update(ctx, sizedesc, 8);
-        WriteBE32(&hash->u.u8[0], ctx->s[0]);
-        WriteBE32(&hash->u.u8[4], ctx->s[1]);
-        WriteBE32(&hash->u.u8[8], ctx->s[2]);
-        WriteBE32(&hash->u.u8[12], ctx->s[3]);
-        WriteBE32(&hash->u.u8[16], ctx->s[4]);
-        WriteBE32(&hash->u.u8[20], ctx->s[5]);
-        WriteBE32(&hash->u.u8[24], ctx->s[6]);
-        WriteBE32(&hash->u.u8[28], ctx->s[7]);
+        WriteBE32(&hash->u8[0], ctx->s[0]);
+        WriteBE32(&hash->u8[4], ctx->s[1]);
+        WriteBE32(&hash->u8[8], ctx->s[2]);
+        WriteBE32(&hash->u8[12], ctx->s[3]);
+        WriteBE32(&hash->u8[16], ctx->s[4]);
+        WriteBE32(&hash->u8[20], ctx->s[5]);
+        WriteBE32(&hash->u8[24], ctx->s[6]);
+        WriteBE32(&hash->u8[28], ctx->s[7]);
 }
 
-void SHA256D64(unsigned char* out, const unsigned char* in, size_t blocks)
+void sha256d64(struct sha256* out, const struct sha256* in, size_t blocks)
 {
         if (transform_d64_8way) {
                 while (blocks >= 8) {
                         transform_d64_8way(out, in);
-                        out += 256;
-                        in += 512;
+                        out += 8;
+                        in += 16;
                         blocks -= 8;
                 }
         }
         if (transform_d64_4way) {
                 while (blocks >= 4) {
                         transform_d64_4way(out, in);
-                        out += 128;
-                        in += 256;
+                        out += 4;
+                        in += 8;
                         blocks -= 4;
                 }
         }
         if (transform_d64_2way) {
                 while (blocks >= 2) {
                         transform_d64_2way(out, in);
-                        out += 64;
-                        in += 128;
+                        out += 2;
+                        in += 4;
                         blocks -= 2;
                 }
         }
         while (blocks) {
                 transform_d64(out, in);
-                out += 32;
-                in += 64;
+                ++out;
+                in += 2;
                 --blocks;
         }
 }
@@ -785,7 +774,7 @@ void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned
 {
         if (transform_8way) {
                 while (blocks >= 8) {
-                        transform_8way(out->u.u8, midstate, in);
+                        transform_8way(out, midstate, in);
                         out += 8;
                         in += 512;
                         blocks -= 8;
@@ -793,7 +782,7 @@ void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned
         }
         if (transform_4way) {
                 while (blocks >= 4) {
-                        transform_4way(out->u.u8, midstate, in);
+                        transform_4way(out, midstate, in);
                         out += 4;
                         in += 256;
                         blocks -= 4;
@@ -801,7 +790,7 @@ void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned
         }
         if (transform_2way) {
                 while (blocks >= 2) {
-                        transform_2way(out->u.u8, midstate, in);
+                        transform_2way(out, midstate, in);
                         out += 2;
                         in += 128;
                         blocks -= 2;
@@ -809,7 +798,7 @@ void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned
         }
         while (blocks) {
                 uint32_t s[8];
-                unsigned char* _out = out->u.u8;
+                unsigned char* _out = out->u8;
                 int i;
                 memcpy(s, midstate, 8 * sizeof(uint32_t));
                 transform(s, in, 1);

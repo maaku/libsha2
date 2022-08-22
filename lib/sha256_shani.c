@@ -13,6 +13,9 @@
 
 #if defined(__x86_64__) || defined(__amd64__)
 
+#include <sha2/sha256.h>
+#include "sha256_internal.h"
+
 #if defined(HAVE_CONFIG_H)
 #include <libsha2-config.h>
 #endif
@@ -184,7 +187,7 @@ void transform_sha256_shani(uint32_t* s, const unsigned char* chunk, size_t bloc
         memcpy(s + 4, &m, sizeof(m));
 }
 
-void transform_sha256d64_shani_2way(unsigned char* out, const unsigned char* in)
+void transform_sha256d64_shani_2way(struct sha256* out, const struct sha256* in)
 {
         __m128i am0, am1, am2, am3, as0, as1, aso0, aso1;
         __m128i bm0, bm1, bm2, bm3, bs0, bs1, bso0, bso1;
@@ -192,24 +195,24 @@ void transform_sha256d64_shani_2way(unsigned char* out, const unsigned char* in)
         /* Transform 1 */
         bs0 = as0 = _mm_load_si128((const __m128i*)INIT0);
         bs1 = as1 = _mm_load_si128((const __m128i*)INIT1);
-        am0 = Load(in);
-        bm0 = Load(in + 64);
+        am0 = Load(&in[0].u8[0]);
+        bm0 = Load(&in[2].u8[0]);
         QuadRound2(&as0, &as1, am0, 0xe9b5dba5b5c0fbcfull, 0x71374491428a2f98ull);
         QuadRound2(&bs0, &bs1, bm0, 0xe9b5dba5b5c0fbcfull, 0x71374491428a2f98ull);
-        am1 = Load(in + 16);
-        bm1 = Load(in + 80);
+        am1 = Load(&in[0].u8[16]);
+        bm1 = Load(&in[2].u8[16]);
         QuadRound2(&as0, &as1, am1, 0xab1c5ed5923f82a4ull, 0x59f111f13956c25bull);
         QuadRound2(&bs0, &bs1, bm1, 0xab1c5ed5923f82a4ull, 0x59f111f13956c25bull);
         ShiftMessageA(&am0, am1);
         ShiftMessageA(&bm0, bm1);
-        am2 = Load(in + 32);
-        bm2 = Load(in + 96);
+        am2 = Load(&in[1].u8[0]);
+        bm2 = Load(&in[3].u8[0]);
         QuadRound2(&as0, &as1, am2, 0x550c7dc3243185beull, 0x12835b01d807aa98ull);
         QuadRound2(&bs0, &bs1, bm2, 0x550c7dc3243185beull, 0x12835b01d807aa98ull);
         ShiftMessageA(&am1, am2);
         ShiftMessageA(&bm1, bm2);
-        am3 = Load(in + 48);
-        bm3 = Load(in + 112);
+        am3 = Load(&in[1].u8[16]);
+        bm3 = Load(&in[3].u8[16]);
         QuadRound2(&as0, &as1, am3, 0xc19bf1749bdc06a7ull, 0x80deb1fe72be5d74ull);
         QuadRound2(&bs0, &bs1, bm3, 0xc19bf1749bdc06a7ull, 0x80deb1fe72be5d74ull);
         ShiftMessageB(&am2, am3, &am0);
@@ -388,10 +391,10 @@ void transform_sha256d64_shani_2way(unsigned char* out, const unsigned char* in)
         /* Extract hash into out */
         Unshuffle(&as0, &as1);
         Unshuffle(&bs0, &bs1);
-        Save(out, as0);
-        Save(out + 16, as1);
-        Save(out + 32, bs0);
-        Save(out + 48, bs1);
+        Save(&out[0].u8[0], as0);
+        Save(&out[0].u8[16], as1);
+        Save(&out[1].u8[0], bs0);
+        Save(&out[1].u8[16], bs1);
 }
 
 #else

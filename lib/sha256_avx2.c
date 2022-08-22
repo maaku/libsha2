@@ -8,6 +8,9 @@
 
 #if defined(__x86_64__) || defined(__amd64__)
 
+#include <sha2/sha256.h>
+#include "sha256_internal.h"
+
 #include <stdint.h> /* for uint32_t */
 #include <immintrin.h> /* for assembly intrinsics */
 
@@ -59,39 +62,39 @@ static inline __attribute__((always_inline)) void Round(__m256i a, __m256i b, __
         *h = Add(t1, t2);
 }
 
-static inline __attribute__((always_inline)) __m256i Read8(const unsigned char* chunk, int offset)
+static inline __attribute__((always_inline)) __m256i Read8(const unsigned char* chunk)
 {
         return _mm256_shuffle_epi8(
                 _mm256_set_epi32(
-                        ReadLE32(chunk + 0 + offset),
-                        ReadLE32(chunk + 64 + offset),
-                        ReadLE32(chunk + 128 + offset),
-                        ReadLE32(chunk + 192 + offset),
-                        ReadLE32(chunk + 256 + offset),
-                        ReadLE32(chunk + 320 + offset),
-                        ReadLE32(chunk + 384 + offset),
-                        ReadLE32(chunk + 448 + offset)),
+                        ReadLE32(chunk + 0),
+                        ReadLE32(chunk + 64),
+                        ReadLE32(chunk + 128),
+                        ReadLE32(chunk + 192),
+                        ReadLE32(chunk + 256),
+                        ReadLE32(chunk + 320),
+                        ReadLE32(chunk + 384),
+                        ReadLE32(chunk + 448)),
                 _mm256_set_epi32(
                         0x0C0D0E0FUL, 0x08090A0BUL, 0x04050607UL, 0x00010203UL,
                         0x0C0D0E0FUL, 0x08090A0BUL, 0x04050607UL, 0x00010203UL));
 }
 
-static inline __attribute__((always_inline)) void Write8(unsigned char *out, int offset, __m256i v)
+static inline __attribute__((always_inline)) void Write8(unsigned char *out, __m256i v)
 {
         v = _mm256_shuffle_epi8(v, _mm256_set_epi32(
                 0x0C0D0E0FUL, 0x08090A0BUL, 0x04050607UL, 0x00010203UL,
                 0x0C0D0E0FUL, 0x08090A0BUL, 0x04050607UL, 0x00010203UL));
-        WriteLE32(out + 0 + offset, _mm256_extract_epi32(v, 7));
-        WriteLE32(out + 32 + offset, _mm256_extract_epi32(v, 6));
-        WriteLE32(out + 64 + offset, _mm256_extract_epi32(v, 5));
-        WriteLE32(out + 96 + offset, _mm256_extract_epi32(v, 4));
-        WriteLE32(out + 128 + offset, _mm256_extract_epi32(v, 3));
-        WriteLE32(out + 160 + offset, _mm256_extract_epi32(v, 2));
-        WriteLE32(out + 192 + offset, _mm256_extract_epi32(v, 1));
-        WriteLE32(out + 224 + offset, _mm256_extract_epi32(v, 0));
+        WriteLE32(out + 0, _mm256_extract_epi32(v, 7));
+        WriteLE32(out + 32, _mm256_extract_epi32(v, 6));
+        WriteLE32(out + 64, _mm256_extract_epi32(v, 5));
+        WriteLE32(out + 96, _mm256_extract_epi32(v, 4));
+        WriteLE32(out + 128, _mm256_extract_epi32(v, 3));
+        WriteLE32(out + 160, _mm256_extract_epi32(v, 2));
+        WriteLE32(out + 192, _mm256_extract_epi32(v, 1));
+        WriteLE32(out + 224, _mm256_extract_epi32(v, 0));
 }
 
-void transform_sha256multi_avx2_8way(unsigned char* out, const uint32_t* s, const unsigned char* in)
+void transform_sha256multi_avx2_8way(struct sha256* out, const uint32_t* s, const unsigned char* in)
 {
         /* Transform 1 */
         __m256i a = K(s[0]);
@@ -103,22 +106,22 @@ void transform_sha256multi_avx2_8way(unsigned char* out, const uint32_t* s, cons
         __m256i g = K(s[6]);
         __m256i h = K(s[7]);
 
-        __m256i w0 = Read8(in, 0),
-                w1 = Read8(in, 4),
-                w2 = Read8(in, 8),
-                w3 = Read8(in, 12),
-                w4 = Read8(in, 16),
-                w5 = Read8(in, 20),
-                w6 = Read8(in, 24),
-                w7 = Read8(in, 28),
-                w8 = Read8(in, 32),
-                w9 = Read8(in, 36),
-                w10 = Read8(in, 40),
-                w11 = Read8(in, 44),
-                w12 = Read8(in, 48),
-                w13 = Read8(in, 52),
-                w14 = Read8(in, 56),
-                w15 = Read8(in, 60);
+        __m256i w0 = Read8(&in[0]),
+                w1 = Read8(&in[4]),
+                w2 = Read8(&in[8]),
+                w3 = Read8(&in[12]),
+                w4 = Read8(&in[16]),
+                w5 = Read8(&in[20]),
+                w6 = Read8(&in[24]),
+                w7 = Read8(&in[28]),
+                w8 = Read8(&in[32]),
+                w9 = Read8(&in[36]),
+                w10 = Read8(&in[40]),
+                w11 = Read8(&in[44]),
+                w12 = Read8(&in[48]),
+                w13 = Read8(&in[52]),
+                w14 = Read8(&in[56]),
+                w15 = Read8(&in[60]);
 
         Round(a, b, c, &d, e, f, g, &h, Add(K(0x428a2f98ul), w0));
         Round(h, a, b, &c, d, e, f, &g, Add(K(0x71374491ul), w1));
@@ -186,17 +189,17 @@ void transform_sha256multi_avx2_8way(unsigned char* out, const uint32_t* s, cons
         Round(b, c, d, &e, f, g, h, &a, Add(K(0xc67178f2ul), Inc4(&w15, sigma1(w13), w8, sigma0(w0))));
 
         /* Output */
-        Write8(out, 0, Add(a, K(s[0])));
-        Write8(out, 4, Add(b, K(s[1])));
-        Write8(out, 8, Add(c, K(s[2])));
-        Write8(out, 12, Add(d, K(s[3])));
-        Write8(out, 16, Add(e, K(s[4])));
-        Write8(out, 20, Add(f, K(s[5])));
-        Write8(out, 24, Add(g, K(s[6])));
-        Write8(out, 28, Add(h, K(s[7])));
+        Write8(&out->u8[0], Add(a, K(s[0])));
+        Write8(&out->u8[4], Add(b, K(s[1])));
+        Write8(&out->u8[8], Add(c, K(s[2])));
+        Write8(&out->u8[12], Add(d, K(s[3])));
+        Write8(&out->u8[16], Add(e, K(s[4])));
+        Write8(&out->u8[20], Add(f, K(s[5])));
+        Write8(&out->u8[24], Add(g, K(s[6])));
+        Write8(&out->u8[28], Add(h, K(s[7])));
 }
 
-void transform_sha256d64_avx2_8way(unsigned char* out, const unsigned char* in)
+void transform_sha256d64_avx2_8way(struct sha256* out, const struct sha256* in)
 {
         /* Transform 1 */
         __m256i a = K(0x6a09e667ul);
@@ -208,22 +211,22 @@ void transform_sha256d64_avx2_8way(unsigned char* out, const unsigned char* in)
         __m256i g = K(0x1f83d9abul);
         __m256i h = K(0x5be0cd19ul);
 
-        __m256i w0 = Read8(in, 0),
-                w1 = Read8(in, 4),
-                w2 = Read8(in, 8),
-                w3 = Read8(in, 12),
-                w4 = Read8(in, 16),
-                w5 = Read8(in, 20),
-                w6 = Read8(in, 24),
-                w7 = Read8(in, 28),
-                w8 = Read8(in, 32),
-                w9 = Read8(in, 36),
-                w10 = Read8(in, 40),
-                w11 = Read8(in, 44),
-                w12 = Read8(in, 48),
-                w13 = Read8(in, 52),
-                w14 = Read8(in, 56),
-                w15 = Read8(in, 60);
+        __m256i w0 = Read8(&in[0].u8[0]),
+                w1 = Read8(&in[0].u8[4]),
+                w2 = Read8(&in[0].u8[8]),
+                w3 = Read8(&in[0].u8[12]),
+                w4 = Read8(&in[0].u8[16]),
+                w5 = Read8(&in[0].u8[20]),
+                w6 = Read8(&in[0].u8[24]),
+                w7 = Read8(&in[0].u8[28]),
+                w8 = Read8(&in[1].u8[0]),
+                w9 = Read8(&in[1].u8[4]),
+                w10 = Read8(&in[1].u8[8]),
+                w11 = Read8(&in[1].u8[12]),
+                w12 = Read8(&in[1].u8[16]),
+                w13 = Read8(&in[1].u8[20]),
+                w14 = Read8(&in[1].u8[24]),
+                w15 = Read8(&in[1].u8[28]);
 
         __m256i t0, t1, t2, t3, t4, t5, t6, t7;
 
@@ -460,14 +463,14 @@ void transform_sha256d64_avx2_8way(unsigned char* out, const unsigned char* in)
         Round(b, c, d, &e, f, g, h, &a, Add5(K(0xc67178f2ul), w15, sigma1(w13), w8, sigma0(w0)));
 
         /* Output */
-        Write8(out, 0, Add(a, K(0x6a09e667ul)));
-        Write8(out, 4, Add(b, K(0xbb67ae85ul)));
-        Write8(out, 8, Add(c, K(0x3c6ef372ul)));
-        Write8(out, 12, Add(d, K(0xa54ff53aul)));
-        Write8(out, 16, Add(e, K(0x510e527ful)));
-        Write8(out, 20, Add(f, K(0x9b05688cul)));
-        Write8(out, 24, Add(g, K(0x1f83d9abul)));
-        Write8(out, 28, Add(h, K(0x5be0cd19ul)));
+        Write8(&out->u8[0], Add(a, K(0x6a09e667ul)));
+        Write8(&out->u8[4], Add(b, K(0xbb67ae85ul)));
+        Write8(&out->u8[8], Add(c, K(0x3c6ef372ul)));
+        Write8(&out->u8[12], Add(d, K(0xa54ff53aul)));
+        Write8(&out->u8[16], Add(e, K(0x510e527ful)));
+        Write8(&out->u8[20], Add(f, K(0x9b05688cul)));
+        Write8(&out->u8[24], Add(g, K(0x1f83d9abul)));
+        Write8(&out->u8[28], Add(h, K(0x5be0cd19ul)));
 }
 
 #else

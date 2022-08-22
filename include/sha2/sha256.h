@@ -38,14 +38,11 @@ const char* sha256_auto_detect(void);
  * @u.u32: a 32-bit integer array
  *
  * A completed SHA256 hash digest is stored in big-endian byte order, regardless
- * of the endianness of the host machine.  Therefore accessing the union via u8
- * is preferable for cross-platform compatibility.
+ * of the endianness of the host machine.  Therefore accessing the union via
+ * explicitly deserializing u8 is required for cross-platform compatibility.
  */
 struct sha256 {
-        union {
-                uint32_t u32[8];
-                unsigned char u8[32];
-        } u;
+        unsigned char u8[32];
 };
 
 /**

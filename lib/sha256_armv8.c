@@ -35,6 +35,9 @@
 #  endif
 # endif
 
+#include <sha2/sha256.h>
+#include "sha256_internal.h"
+
 #include <stddef.h>
 
 static const __attribute__((aligned (16))) uint32_t K[64] =
@@ -220,7 +223,7 @@ void transform_sha256_armv8(uint32_t* state, const unsigned char* data, size_t b
         vst1q_u32(&state[4], STATE1);
 }
 
-void transform_sha256d64_armv8_2way(unsigned char* output, const unsigned char* input)
+void transform_sha256d64_armv8_2way(unsigned char* output, const struct sha256* input)
 {
         /* Initial state. */
         static const __attribute__((aligned (16))) uint32_t INIT[8] = {

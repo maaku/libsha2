@@ -10,6 +10,9 @@
  * (available at the bottom of this file).
  */
 
+#include <sha2/sha256.h>
+#include "sha256_internal.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 
