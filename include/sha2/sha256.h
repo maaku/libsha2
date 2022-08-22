@@ -147,22 +147,30 @@ void sha256_update(struct sha256_ctx* ctx, const void *data, size_t len);
 void sha256_done(struct sha256* hash, struct sha256_ctx* ctx);
 
 /**
- * @brief Perform a merkle-tree compression step using double-SHA256
+ * @brief Perform a Merkle-tree compression step using double-SHA256
  *
  * @param out an array of 2*blocks sha256 hash values
  * @param in an array of 1*blocks sha256 hash values
  * @param blocks the number of double-SHA256 hash operations to perform
  *
  * Each pair of hashes from the input are hashed together, and then the
- * resulting value is hashed one more time.  Since two 32-byte hash values take
- * two SHA256 blocks to compress, and the intermediate value takes one, this
- * performs 3 compression rounds per inner-node in the tree.
+ * resulting value is hashed one more time before being written to the output.
+ * Since two 32-byte hash values take two SHA256 blocks to compress, with
+ * padding, and the intermediate value with padding can fit in a single block,
+ * this performs 3 compression rounds per inner-node in the tree.  However
+ * because of various optimizations that are available due to the fixed format
+ * of the input, this only requires about 2.32x more computation compared with a
+ * single round of SHA256. In addition, various multi-lane optimizations are
+ * available allowing for up to 8 hashes to be performed simultaneously on some
+ * architectures.
  *
  * The origin of this primitive is in how Bitcoin and related projects construct
  * Merkle trees by performing double-SHA256 hashes of child leaf values to
- * produce the parent or inner-node value.
+ * produce the parent or inner-node value.  Merkle hashing can take a
+ * significant amount of time for various cryptocurrency applications, so this
+ * library contains vector-optimized implementations for many architectures.
  */
-void sha256_d64(struct sha256 out[], const struct sha256 input[], size_t blocks);
+void sha256_double64(struct sha256 out[], const struct sha256 in[], size_t blocks);
 
 #endif /* SHA2__SHA256_H */
 
