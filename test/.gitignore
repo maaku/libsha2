@@ -1,0 +1,4 @@
+# Googletest files
+*.log
+*.trs
+gtest
