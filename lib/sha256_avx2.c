@@ -199,7 +199,7 @@ void transform_sha256multi_avx2_8way(struct sha256* out, const uint32_t* s, cons
         Write8(&out->u8[28], Add(h, K(s[7])));
 }
 
-void transform_sha256d64_avx2_8way(struct sha256* out, const struct sha256* in)
+void transform_sha256d64_avx2_8way(struct sha256 out[8], const struct sha256 in[16])
 {
         /* Transform 1 */
         __m256i a = K(0x6a09e667ul);

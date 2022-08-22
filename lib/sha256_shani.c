@@ -187,7 +187,7 @@ void transform_sha256_shani(uint32_t* s, const unsigned char* chunk, size_t bloc
         memcpy(s + 4, &m, sizeof(m));
 }
 
-void transform_sha256d64_shani_2way(struct sha256* out, const struct sha256* in)
+void transform_sha256d64_shani_2way(struct sha256 out[2], const struct sha256 in[4])
 {
         __m128i am0, am1, am2, am3, as0, as1, aso0, aso1;
         __m128i bm0, bm1, bm2, bm3, bs0, bs1, bso0, bso1;

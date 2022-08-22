@@ -142,7 +142,7 @@ static void transform_noasm(uint32_t* s, const unsigned char* chunk, size_t bloc
         }
 }
 
-static void transform_d64_noasm(struct sha256* out, const struct sha256* in)
+static void transform_d64_noasm(struct sha256 out[1], const struct sha256 in[2])
 {
         /* Transform 1 */
         uint32_t a = 0x6a09e667ul;
@@ -395,9 +395,9 @@ static void transform_d64_noasm(struct sha256* out, const struct sha256* in)
 
 typedef void (*transform_t)(uint32_t*, const unsigned char*, size_t);
 typedef void (*transform_multi_t)(struct sha256*, const uint32_t*, const unsigned char*);
-typedef void (*transform_d64_t)(struct sha256*, const struct sha256*);
+typedef void (*transform_d64_t)(struct sha256[], const struct sha256[]);
 
-void transform_d64_wrapper(struct sha256* out, const struct sha256* in, transform_t tr)
+void transform_d64_wrapper(struct sha256 out[1], const struct sha256 in[2], transform_t tr)
 {
         uint32_t s[8];
         static const unsigned char padding1[64] = {
@@ -435,17 +435,17 @@ void transform_d64_wrapper(struct sha256* out, const struct sha256* in, transfor
         WriteBE32(&out->u8[28], s[7]);
 }
 #if defined(__x86_64__) || defined(__amd64__)
-void transform_sha256d64_shani(struct sha256* out, const struct sha256* in)
+void transform_sha256d64_shani(struct sha256 out[1], const struct sha256 in[2])
 {
         transform_d64_wrapper(out, in, transform_sha256_shani);
 }
-void transform_sha256d64_sse4(struct sha256* out, const struct sha256* in)
+void transform_sha256d64_sse4(struct sha256 out[1], const struct sha256 in[2])
 {
         transform_d64_wrapper(out, in, transform_sha256_sse4);
 }
 #endif /* defined(__x86_64__) || defined(__amd64__) || defined(__i386__) */
 #if defined(__arm__) || defined(__aarch32__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM)
-void transform_sha256d64_armv8(struct sha256* out, const struct sha256* in)
+void transform_sha256d64_armv8(struct sha256 out[1], const struct sha256 in[2])
 {
         transform_d64_wrapper(out, in, transform_sha256_armv8);
 }
@@ -718,7 +718,7 @@ void sha256_done(struct sha256* hash, struct sha256_ctx* ctx)
         WriteBE32(&hash->u8[28], ctx->s[7]);
 }
 
-void sha256_d64(struct sha256 out[], const struct sha256 in[], size_t blocks)
+void sha256_double64(struct sha256 out[], const struct sha256 in[], size_t blocks)
 {
         if (transform_d64_8way) {
                 while (blocks >= 8) {

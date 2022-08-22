@@ -193,7 +193,7 @@ void transform_sha256multi_sse41_4way(struct sha256* out, const uint32_t* s, con
         Write4(&out->u8[28], Add(h, K(s[7])));
 }
 
-void transform_sha256d64_sse41_4way(struct sha256* out, const struct sha256* in)
+void transform_sha256d64_sse41_4way(struct sha256 out[4], const struct sha256 in[8])
 {
         /* Transform 1 */
         __m128i a = K(0x6a09e667ul);
