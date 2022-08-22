@@ -10,6 +10,7 @@ AH_TOP([#define LIBSHA2__CONFIG_H 1])
 AH_BOTTOM([#endif /*LIBSHA2__CONFIG_H*/])
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
+AM_PROG_AR
 LT_INIT
 
 dnl make the compilation flags quiet unless V=1 is used
@@ -29,8 +30,9 @@ AC_PROG_CC
 if test x"$ac_cv_prog_cc_c89" = x"no"; then
     AC_MSG_ERROR([c89 compiler support required])
 fi
-
 AM_PROG_CC_C_O
+
+AC_PROG_CXX
 
 CFLAGS="$CFLAGS -W"
 
