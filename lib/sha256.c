@@ -752,24 +752,6 @@ void sha256_double64(struct sha256 out[], const struct sha256 in[], size_t block
         }
 }
 
-/* Extra functionality not yet exposed */
-
-void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned char* in, size_t blocks);
-void CSHA256_WriteAndFinalize8(struct sha256_ctx* ctx, const unsigned char* nonce1, const unsigned char* nonce2, const unsigned char* final, struct sha256 hashes[8])
-{
-        unsigned char blocks[8*64] = { 0 };
-        int i;
-        for (i = 0; i < 8; ++i) {
-                memcpy(blocks + i*64 + 0, nonce1, 4);
-                memcpy(blocks + i*64 + 4, nonce2, 4);
-                memcpy(blocks + i*64 + 8, final, 4);
-                blocks[i*64 + 12] = 0x80; /* padding byte */
-                WriteBE64(blocks + i*64 + 56, (ctx->bytes + 12) << 3);
-                nonce2 += 4;
-        }
-        SHA256Midstate(hashes, ctx->s, blocks, 8);
-}
-
 void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned char* in, size_t blocks)
 {
         if (transform_8way) {
@@ -810,6 +792,23 @@ void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned
                 in += 64;
                 --blocks;
         }
+}
+
+/* Extra functionality not yet exposed */
+
+void CSHA256_WriteAndFinalize8(struct sha256_ctx* ctx, const unsigned char* nonce1, const unsigned char* nonce2, const unsigned char* final, struct sha256 hashes[8])
+{
+        unsigned char blocks[8*64] = { 0 };
+        int i;
+        for (i = 0; i < 8; ++i) {
+                memcpy(blocks + i*64 + 0, nonce1, 4);
+                memcpy(blocks + i*64 + 4, nonce2, 4);
+                memcpy(blocks + i*64 + 8, final, 4);
+                blocks[i*64 + 12] = 0x80; /* padding byte */
+                WriteBE64(blocks + i*64 + 56, (ctx->bytes + 12) << 3);
+                nonce2 += 4;
+        }
+        SHA256Midstate(hashes, ctx->s, blocks, 8);
 }
 
 /* End of File
