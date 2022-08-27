@@ -752,7 +752,7 @@ void sha256_double64(struct sha256 out[], const struct sha256 in[], size_t block
         }
 }
 
-void SHA256Midstate(struct sha256* out, const uint32_t* midstate, const unsigned char* in, size_t blocks)
+void sha256_midstate(struct sha256 out[], const uint32_t midstate[8], const unsigned char in[], size_t blocks)
 {
         if (transform_8way) {
                 while (blocks >= 8) {
@@ -808,7 +808,7 @@ void CSHA256_WriteAndFinalize8(struct sha256_ctx* ctx, const unsigned char* nonc
                 WriteBE64(blocks + i*64 + 56, (ctx->bytes + 12) << 3);
                 nonce2 += 4;
         }
-        SHA256Midstate(hashes, ctx->s, blocks, 8);
+        sha256_midstate(hashes, ctx->s, blocks, 8);
 }
 
 /* End of File

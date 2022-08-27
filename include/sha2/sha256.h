@@ -176,6 +176,31 @@ void sha256_done(struct sha256* hash, struct sha256_ctx* ctx);
  */
 void sha256_double64(struct sha256 out[], const struct sha256 in[], size_t blocks);
 
+/**
+ * @brief Performs multiple SHA256 compression rounds in parallel using the same
+ * initial state vector but differing data blocks
+ *
+ * @param out an array of 1*blocks sha256 hash values
+ * @param midstate the initial state (e.g. sha256_ctx.s)
+ * @param in an array of 64*blocks SHA256 compression round inputs
+ * @param blocks the number of parallel SHA256 hash operations to perform
+ *
+ * This rather specialized API is used to compute multiple SHA256 compression
+ * rounds, in parallel, using the same initial state vector but different input
+ * blocks.  The typical use case is for grinding hash preimage partial solutions
+ * (e.g. proof-of-work), which can be done very efficiently by precomputing a
+ * midstate vector and then attempting multiple final compression rounds in
+ * parallel.
+ *
+ * For maximum performance blocks should be a multiple of 8, as that is the
+ * highest degree of parallelism on any presently supported architecture.
+ *
+ * Note that the midstate is delivered as host-ordered unsigned integers, the
+ * same as sha256_ctx.s, but the output is a standard SHA256 network-ordered
+ * hash.
+ */
+void sha256_midstate(struct sha256 out[], const uint32_t midstate[8], const unsigned char in[], size_t blocks);
+
 #ifdef __cplusplus
 }
 #endif
