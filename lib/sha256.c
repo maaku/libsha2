@@ -794,22 +794,5 @@ void sha256_midstate(struct sha256 out[], const uint32_t midstate[8], const unsi
         }
 }
 
-/* Extra functionality not yet exposed */
-
-void CSHA256_WriteAndFinalize8(struct sha256_ctx* ctx, const unsigned char* nonce1, const unsigned char* nonce2, const unsigned char* final, struct sha256 hashes[8])
-{
-        unsigned char blocks[8*64] = { 0 };
-        int i;
-        for (i = 0; i < 8; ++i) {
-                memcpy(blocks + i*64 + 0, nonce1, 4);
-                memcpy(blocks + i*64 + 4, nonce2, 4);
-                memcpy(blocks + i*64 + 8, final, 4);
-                blocks[i*64 + 12] = 0x80; /* padding byte */
-                WriteBE64(blocks + i*64 + 56, (ctx->bytes + 12) << 3);
-                nonce2 += 4;
-        }
-        sha256_midstate(hashes, ctx->s, blocks, 8);
-}
-
 /* End of File
  */
