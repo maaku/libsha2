@@ -223,7 +223,7 @@ void transform_sha256_armv8(uint32_t* state, const unsigned char* data, size_t b
         vst1q_u32(&state[4], STATE1);
 }
 
-void transform_sha256d64_armv8_2way(struct sha256 out[2], const struct sha256 input[4])
+void transform_sha256d64_armv8_2way(struct sha256 out[2], const struct sha256 in[4])
 {
         /* Initial state. */
         static const __attribute__((aligned (16))) uint32_t INIT[8] = {
