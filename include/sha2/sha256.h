@@ -124,7 +124,7 @@ void sha256_init(struct sha256_ctx* ctx);
  *
  * @param ctx the sha256_ctx to use
  * @param data a pointer to data in memory
- * @param len the number of bytes pointed to by @data
+ * @param len the number of bytes pointed to by \p data
  *
  * Adds data to the hash context, performing hash compressions if a full block
  * of 64 bytes if formed, or storing the bytes in the buffer otherwise.
