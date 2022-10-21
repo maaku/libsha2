@@ -39,10 +39,9 @@ const char* sha256_auto_detect(void);
  * @brief A structure representing a completed SHA256 hash digest value.
  *
  * @u.u8: an unsigned char array
- * @u.u32: a 32-bit integer array
  *
  * A completed SHA256 hash digest is stored in big-endian byte order, regardless
- * of the endianness of the host machine.  Therefore accessing the union via
+ * of the endianness of the host machine.  Therefore accessing the struct via
  * explicitly deserializing u8 is required for cross-platform compatibility.
  */
 struct sha256 {
