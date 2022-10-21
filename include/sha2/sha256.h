@@ -23,7 +23,7 @@ extern "C" {
  * algorithm(s)
  *
  * This library supports various vector compute and special-purpose
- * cryptographic accelerators for efficiently calculating SHA256 hashs.  This
+ * cryptographic accelerators for efficiently calculating SHA256 hashes.  This
  * function queries the host machine capabilities and selects which backend
  * implementation to use.  A pointer to an internal buffer is returned to the
  * caller, containing a string naming the algorithms selected.
@@ -127,7 +127,7 @@ void sha256_init(struct sha256_ctx* ctx);
  * @param len the number of bytes pointed to by \p data
  *
  * Adds data to the hash context, performing hash compressions if a full block
- * of 64 bytes if formed, or storing the bytes in the buffer otherwise.
+ * of 64 bytes is formed, or storing the bytes in the buffer otherwise.
  *
  * You can call this function multiple times with the same context to hash more
  * data, before calling sha256_done().
