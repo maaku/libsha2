@@ -1,0 +1,2 @@
+rename sha256_done to sha256_final
+change order of sha256_done/final parameters
