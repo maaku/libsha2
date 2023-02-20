@@ -467,6 +467,18 @@ void transform_sha256d64_sse41_4way(struct sha256 out[4], const struct sha256 in
         Write4_sse41(&out->u8[28], Add(h, K(0x5be0cd19ul)));
 }
 
+#undef K
+#undef Add
+#undef Add3
+#undef Add4
+#undef Add5
+#undef Xor
+#undef Xor3
+#undef Or
+#undef And
+#undef ShR
+#undef ShL
+
 #else
 /* -Wempty-translation-unit
  * ISO C requires a translation unit to contain at least one declaration
