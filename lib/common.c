@@ -79,7 +79,7 @@ uint64_t ReadBE64(const unsigned char* ptr)
 void WriteBE16(unsigned char* ptr, uint16_t x)
 {
         uint16_t v = htobe16(x);
-        memcpy(ptr, (char*)&v, 4);
+        memcpy(ptr, (char*)&v, 2);
 }
 
 void WriteBE32(unsigned char* ptr, uint32_t x)
