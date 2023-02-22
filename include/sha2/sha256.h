@@ -204,12 +204,11 @@ void sha256_double64(struct sha256 out[], const struct sha256 in[], size_t block
  *         unsigned char blocks[8*64] = { 0 };
  *         int i;
  *         for (i = 0; i < 8; ++i) {
- *                 memcpy(blocks + i*64 + 0, nonce1, 4);
- *                 memcpy(blocks + i*64 + 4, nonce2, 4);
- *                 memcpy(blocks + i*64 + 8, final, 4);
+ *                 memcpy(blocks + 64*i + 0, nonce1, 4);
+ *                 memcpy(blocks + 64*i + 4, nonce2 + 4*i, 4);
+ *                 memcpy(blocks + 64*i + 8, final, 4);
  *                 blocks[i*64 + 12] = 0x80; // padding byte
- *                 WriteBE64(blocks + i*64 + 56, (ctx->bytes + 12) << 3);
- *                 nonce2 += 4;
+ *                 WriteBE64(blocks + 64*i + 56, (ctx->bytes + 12) << 3);
  *         }
  *         sha256_midstate(hashes, ctx->s, blocks, 8);
  * }
