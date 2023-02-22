@@ -1509,6 +1509,11 @@ _SHUF_00BA:              ddq 0xFFFFFFFFFFFFFFFF0b0a090803020100
 _SHUF_DC00:              ddq 0x0b0a090803020100FFFFFFFFFFFFFFFF
 */
 
+#else
+/* -Wempty-translation-unit
+ * ISO C requires a translation unit to contain at least one declaration
+ */
+typedef int sse4_make_iso_compilers_happy;
 #endif
 
 /* End of File

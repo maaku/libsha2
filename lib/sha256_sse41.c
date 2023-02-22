@@ -471,7 +471,7 @@ void transform_sha256d64_sse41_4way(struct sha256 out[4], const struct sha256 in
 /* -Wempty-translation-unit
  * ISO C requires a translation unit to contain at least one declaration
  */
-typedef int make_iso_compilers_happy;
+typedef int sse41_make_iso_compilers_happy;
 #endif
 
 /* End of File

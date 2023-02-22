@@ -401,7 +401,7 @@ void transform_sha256d64_shani_2way(struct sha256 out[2], const struct sha256 in
 /* -Wempty-translation-unit
  * ISO C requires a translation unit to contain at least one declaration
  */
-typedef int make_iso_compilers_happy;
+typedef int shani_make_iso_compilers_happy;
 #endif
 
 /* End of File

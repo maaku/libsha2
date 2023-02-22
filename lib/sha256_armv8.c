@@ -924,7 +924,7 @@ void transform_sha256d64_armv8_2way(struct sha256 out[2], const struct sha256 in
 /* -Wempty-translation-unit
  * ISO C requires a translation unit to contain at least one declaration
  */
-typedef unsigned char make_iso_compilers_happy;
+typedef unsigned char armv8_make_iso_compilers_happy;
 /* On some platforms, such as macOS, ranlib emits a warning if a compilation
  * unit exports no symbols.  To avoid these annoying warnings, we export a
  * minimally-sized global variable with a unique name.
