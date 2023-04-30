@@ -929,7 +929,7 @@ typedef unsigned char armv8_make_iso_compilers_happy;
  * unit exports no symbols.  To avoid these annoying warnings, we export a
  * minimally-sized global variable with a unique name.
  */
-make_iso_compilers_happy sha2__sha256_armv8__no_warning_for_no_symbols = 0;
+armv8_make_iso_compilers_happy sha2__sha256_armv8__no_warning_for_no_symbols = 0;
 #endif /* ARMv8 */
 
 /* End of File
