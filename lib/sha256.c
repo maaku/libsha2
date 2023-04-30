@@ -461,7 +461,7 @@ transform_d64_t transform_d64_4way = NULL;
 transform_d64_t transform_d64_8way = NULL;
 
 #ifndef NDEBUG
-static int self_test() {
+static int self_test(void) {
         /* Input state (equal to the initial SHA256 state) */
         static const uint32_t init[8] = {
                 0x6a09e667ul, 0xbb67ae85ul, 0x3c6ef372ul, 0xa54ff53aul, 0x510e527ful, 0x9b05688cul, 0x1f83d9abul, 0x5be0cd19ul
@@ -553,7 +553,7 @@ static int self_test() {
 
 #if (defined(__x86_64__) || defined(__amd64__) || defined(__i386__))
 /** Check whether the OS has enabled AVX registers. */
-static int AVXEnabled()
+static int AVXEnabled(void)
 {
         uint32_t a, d;
         __asm__("xgetbv" : "=a"(a), "=d"(d) : "c"(0));
@@ -561,7 +561,7 @@ static int AVXEnabled()
 }
 #endif
 
-const char* sha256_auto_detect()
+const char* sha256_auto_detect(void)
 {
         static char ret[255] = "standard";
 #if defined(HAVE_GETCPUID)
