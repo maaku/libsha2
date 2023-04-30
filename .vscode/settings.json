@@ -67,5 +67,6 @@
         "utility": "c",
         "stdlib.h": "c",
         "stdint.h": "c"
-    }
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
 }
